@@ -1,0 +1,94 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway-service
+  profiles:
+    active: dev
+    jackson:
+      serialization:
+        write-dates-as-timestamps: true   #配置返回时间搓
+  cloud:
+    gateway:
+      routes:
+        #指定时间前的路由地址
+        - id: before_route
+          uri: http://www.baidu.com
+          predicates:
+            - Before=2017-01-20T17:42:47.789-07:00
+        #指定时间之间的路由地址
+        - id: before_route
+          uri: http://www.sohu.com
+          predicates:
+            - Between=2020-01-20T17:42:47.789-07:00,2020-01-21T17:42:47.789-07:00
+        #指定时间后的路由地址
+        - id: before_route
+          uri: http://www.sina.com
+          predicates:
+            - After=2019-05-20T17:42:47.789-07:00
+        #指定Cookie中有指定值的路由地址，这里注意有两个参数，第一个为Cookie的Key,第二个为正则表达式
+        - id: cookie_route
+          uri: http://www.qq.com
+          predicates:
+            - Cookie=chocolate,[A-Za-z]+
+        #指定Header中有指定值的路由地址，有两个参数，第一个为Header的Key,第二个为正则表达式
+        - id: header_route
+          uri: http://www.163.com
+          predicates:
+            - Header=X-Request-Id, \d+
+        #指定Host的路由
+        - id: host_route
+          uri: http://www.360.com
+          predicates:
+            - Host=**.somehost.org,**.anotherhost.org
+        #指定请求方法的路由
+        - id: method_route
+          uri: http://www.baidu.com
+          predicates:
+            - Method=GET
+        #segment作为参数，可以在接口后台获取
+        - id: params_route
+          uri: lb://test-client-service
+          predicates:
+            - Path=/test/{segment}
+          filters:
+            #SetPath filter 使用模版参数，修改请求路径
+            - SetPath=/{segment}
+            #AddRequestHeader过滤器添加Request头
+            - AddRequestHeader=X-Request-Foo, Bar
+        #ip地址控制路由，192.168.1.1
+        - id: remoteaddr_route
+          uri: http://localhost:8090
+          predicates:
+            - RemoteAddr=192.168.1.1
+        #url中带有params查询的，如：http://localhost:9005/getUser?params=111，params后还可以加正则表达式，如：params,\d+
+        - id: query_route
+          uri: lb://test-client-service
+          predicates:
+            - Query=params
+
+#mybatis相关配置
+mybatis:
+  #当mybatis的xml文件和mapper接口不在相同包下时
+  #需要用mapperLocations属性指定xml文件的路径。
+  #*是个通配符，代表所有的文件，**代表所有目录下
+  mapper-locations: classpath:mapper/*.xml
+  #指定bean所在包
+  #在mapper.xml中可以使用别名而不使用类的全路径名
+  type-aliases-package: com.ifsaid.admin.entity
+
+#pagehelper分页插件
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  params: count=countSql
+  support-methods-arguments: true
+
+jwt:
+  header: jwtHeader
+  secret: eyJleHAiOjE1NDMyMDUyODUsInN1YiI6ImFkbWluIiwiY3JlYXRlZCI6MTU0MDYxMzI4N
+  expiration: 3600000   #毫秒
+  route:
+    login: /auth/login
+    refresh: /auth/refresh
+    register: /auth/register

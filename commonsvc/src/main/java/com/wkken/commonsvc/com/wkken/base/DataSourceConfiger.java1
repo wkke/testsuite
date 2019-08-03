@@ -1,0 +1,32 @@
+package com.wkken.commonsvc.com.wkken.base;
+
+import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import javax.sql.DataSource;
+import java.util.HashMap;
+
+@Configuration
+public class DataSourceConfiger {
+
+@Bean(name = "primaryDataSource")
+@Qualifier("primaryDataSource")
+@ConfigurationProperties(prefix = "spring.datasource.primary")
+public DataSource primaryDataSource(){
+    return DruidDataSourceBuilder.create().build();
+}
+@Bean(name = "dynamicDataSource")
+@Primary
+public DynamicDataSource  dynamicDataSource(@Qualifier("primaryDataSource")DataSource dataSource){
+    DynamicDataSource dynamicDataSource = new DynamicDataSource();
+    dynamicDataSource.myMap = new HashMap<>();//保存我们有的数据源，方便后面动态增加
+    dynamicDataSource.myMap.put("1",dataSource);
+    dynamicDataSource.setTargetDataSources(dynamicDataSource.myMap);//父类的方法
+    dynamicDataSource.setDefaultTargetDataSource(dataSource);//父类的方法
+    return  dynamicDataSource;
+}
+}

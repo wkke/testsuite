@@ -1,0 +1,18 @@
+spring:
+   datasource:
+     primary:  &systemdb
+      url: jdbc:jtds:sqlserver://localhost:1433/gxfx2
+      username: sa
+      password: sql2008sa
+      testWhileIdle: false
+      validationQuery: select 1
+
+datasources:
+  biz1:
+      url: jdbc:jtds:sqlserver://localhost:1433/GXSHFX
+      username: sa
+      password: sql2008sa
+
+
+
+
